@@ -1,0 +1,97 @@
+<?xml version='1.0'?>
+<diagram>
+	<elements>
+		<entityid id="0" posX="492" posY="100" name="User"></entityid>
+		<attributeid id="1" posX="405" posY="27" type="normal" name="Nombre" required="false" unique="false" datatype="varchar" length="50"></attributeid>
+		<attributeid id="2" posX="529" posY="20" type="normal" name="Apellido" required="false" unique="false" datatype="varchar" length="50"></attributeid>
+		<attributeid id="3" posX="355" posY="98" type="key" name="DNI" required="true" unique="true" datatype="integer" length="50"></attributeid>
+		<entityid id="4" posX="843" posY="101" name="ExUser"></entityid>
+		<attributeid id="5" posX="841" posY="29" type="normal" name="Fecha" required="false" unique="false" datatype="date" length="50"></attributeid>
+		<attributeid id="6" posX="980" posY="101" type="key" name="Id" required="true" unique="true" datatype="integer" length="50"></attributeid>
+		<relationshipid id="7" posX="655" posY="97" name="Eliminado"></relationshipid>
+		<entityid id="1469" posX="489" posY="314" name="Partida"></entityid>
+		<attributeid id="1470" posX="414" posY="382" type="key" name="Nro_Partida" required="true" unique="true" datatype="integer" length="50"></attributeid>
+		<attributeid id="1471" posX="533" posY="385" type="normal" name="Fecha_inicio" required="false" unique="false" datatype="date" length="50"></attributeid>
+		<attributeid id="1472" posX="637" posY="383" type="normal" name="Fecha_fin" required="false" unique="false" datatype="date" length="50"></attributeid>
+		<entityid id="1473" posX="110" posY="307" name="Grilla"></entityid>
+		<attributeid id="1474" posX="69" posY="215" type="key" name="Id" required="true" unique="true" datatype="integer" length="50"></attributeid>
+		<attributeid id="1475" posX="40" posY="379" type="normal" name="X" required="false" unique="false" datatype="integer" length="50"></attributeid>
+		<attributeid id="1476" posX="134" posY="382" type="normal" name="Y" required="false" unique="false" datatype="integer" length="50"></attributeid>
+		<relationshipid id="1477" posX="282" posY="312" name="Utiliza"></relationshipid>
+		<entityid id="1478" posX="877" posY="316" name="Ficha"></entityid>
+		<attributeid id="1479" posX="777" posY="391" type="key" name="Id" required="true" unique="true" datatype="integer" length="50"></attributeid>
+		<attributeid id="1480" posX="885" posY="395" type="normal" name="X" required="false" unique="false" datatype="integer" length="50"></attributeid>
+		<attributeid id="1481" posX="977" posY="391" type="normal" name="Y" required="false" unique="false" datatype="integer" length="50"></attributeid>
+		<relationshipid id="1482" posX="686" posY="309" name="OrdenF"></relationshipid>
+		<attributeid id="1483" posX="663" posY="213" type="normal" name="Nro_ficha" required="false" unique="false" datatype="integer" length="50"></attributeid>
+		<relationshipid id="2330" posX="399" posY="210" name="Jugador_1"></relationshipid>
+		<relationshipid id="2331" posX="542" posY="208" name="Jugador_2"></relationshipid>
+	</elements>
+	<entity id="0">
+		<attributelist>
+			<attribute id="1"></attribute>
+			<attribute id="2"></attribute>
+			<attribute id="3"></attribute>
+		</attributelist>
+	</entity>
+	<entity id="4">
+		<attributelist>
+			<attribute id="5"></attribute>
+			<attribute id="6"></attribute>
+		</attributelist>
+	</entity>
+	<relationship id="7">
+		<rolelist>
+			<role mincard="1" maxcard="N" name="" entityid="0" refintegrity="false"></role>
+			<role mincard="1" maxcard="N" name="" entityid="4" refintegrity="false"></role>
+		</rolelist>
+	</relationship>
+	<entity id="1469">
+		<attributelist>
+			<attribute id="1470"></attribute>
+			<attribute id="1471"></attribute>
+			<attribute id="1472"></attribute>
+		</attributelist>
+	</entity>
+	<entity id="1473">
+		<attributelist>
+			<attribute id="1474"></attribute>
+			<attribute id="1475"></attribute>
+			<attribute id="1476"></attribute>
+		</attributelist>
+	</entity>
+	<relationship id="1477">
+		<rolelist>
+			<role mincard="1" maxcard="N" name="" entityid="1469" refintegrity="false"></role>
+			<role mincard="1" maxcard="N" name="" entityid="1473" refintegrity="false"></role>
+		</rolelist>
+	</relationship>
+	<entity id="1478">
+		<attributelist>
+			<attribute id="1479"></attribute>
+			<attribute id="1480"></attribute>
+			<attribute id="1481"></attribute>
+		</attributelist>
+	</entity>
+	<relationship id="1482">
+		<attributelist>
+			<attribute id="1483"></attribute>
+		</attributelist>
+		<rolelist>
+			<role mincard="1" maxcard="N" name="" entityid="1469" refintegrity="false"></role>
+			<role mincard="1" maxcard="N" name="" entityid="1478" refintegrity="false"></role>
+		</rolelist>
+	</relationship>
+	<relationship id="2330">
+		<rolelist>
+			<role mincard="1" maxcard="N" name="" entityid="1469" refintegrity="false"></role>
+			<role mincard="1" maxcard="N" name="" entityid="0" refintegrity="false"></role>
+		</rolelist>
+	</relationship>
+	<relationship id="2331">
+		<rolelist>
+			<role mincard="1" maxcard="N" name="" entityid="0" refintegrity="false"></role>
+			<role mincard="1" maxcard="N" name="" entityid="1469" refintegrity="false"></role>
+		</rolelist>
+	</relationship>
+</diagram>
