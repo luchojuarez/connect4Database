@@ -4,68 +4,47 @@
   SET SEARCH_PATH = 'connect4_db';
 
 
-CREATE TABLE Usuario(
- DNI integer UNIQUE NOT NULL,
+CREATE TABLE User(
+ DNI integer UNIQUE NOT NULL PRIMARY KEY,
  Nombre varchar(50),
- Apellido varchar(50),
-PRIMARY KEY (DNI));
+ Apellido varchar(50));
 
 CREATE TABLE ExUser(
- Id integer UNIQUE NOT NULL,
+ Id integer UNIQUE NOT NULL PRIMARY KEY,
  Fecha date,
-PRIMARY KEY (Id));
+ DNI INTEGER,
+CONSTRAINT FKdni FOREIGN KEY (DNI) REFERENCES User(DNI) ON DELETE CASCADE);
 
-CREATE TABLE Eliminado(
- DNI integer NOT NULL,
- Id integer NOT NULL,
-FOREIGN KEY (DNI) REFERENCES Usuario (DNI),
-FOREIGN KEY (Id) REFERENCES ExUser (Id),
-PRIMARY KEY (DNI,Id));
 
 CREATE TABLE Partida(
- Nro_Partida integer UNIQUE NOT NULL,
+ Nro_Partida integer UNIQUE NOT NULL PRIMARY KEY,
  Fecha_inicio date,
- Fecha_fin date,
-PRIMARY KEY (Nro_Partida));
+ Fecha_fin date,-- LA HORA TE LA PONE JUNTO CON LA FECHA
+ UserJ1 integer,
+ UserJ2 integer,
+ idGrid integer,
+CONSTRAINT FKJ1 FOREIGN KEY (UserJ1) REFERENCES User(DNI) ON DELETE CASCADE,
+CONSTRAINT FKJ2 FOREIGN KEY (UserJ2) REFERENCES User(DNI) ON DELETE CASCADE,
+CONSTRAINT FKGrid FOREIGN KEY (idGrid) REFERENCES Grid(id) ON DELETE CASCADE);
 
-CREATE TABLE Grilla(
- Id integer UNIQUE NOT NULL,
+
+CREATE TABLE Grid(
+ Id integer UNIQUE NOT NULL PRIMARY KEY,
  X integer,
- Y integer,
-PRIMARY KEY (Id));
+ Y integer);
 
-CREATE TABLE Utiliza(
- Nro_Partida integer NOT NULL,
- Id integer NOT NULL,
-FOREIGN KEY (Nro_Partida) REFERENCES Partida (Nro_Partida),
-FOREIGN KEY (Id) REFERENCES Grilla (Id),
-PRIMARY KEY (Nro_Partida,Id));
 
 CREATE TABLE Ficha(
- Id integer UNIQUE NOT NULL,
+ Id integer UNIQUE NOT NULL PRIMARY KEY,
  X integer,
- Y integer,
-PRIMARY KEY (Id));
+ Y integer);
 
 CREATE TABLE OrdenF(
  Nro_Partida integer NOT NULL,
  Id integer NOT NULL,
  Nro_ficha integer NOT NULL,
-FOREIGN KEY (Nro_Partida) REFERENCES Partida (Nro_Partida),
-FOREIGN KEY (Id) REFERENCES Ficha (Id),
-PRIMARY KEY (Nro_Partida,Id));
+CONSTRAINT FKpartida FOREIGN KEY (Nro_Partida) REFERENCES Partida (Nro_Partida),
+CONSTRAINT FKid_ficha FOREIGN KEY (Id) REFERENCES Ficha (Id),
+CONSTRAINT PK PRIMARY KEY (Nro_Partida,Id));
 
-CREATE TABLE Jugador_1(
- Nro_Partida integer NOT NULL,
- DNI integer NOT NULL,
-FOREIGN KEY (Nro_Partida) REFERENCES Partida (Nro_Partida),
-FOREIGN KEY (DNI) REFERENCES Usuario (DNI),
-PRIMARY KEY (Nro_Partida,DNI));
-
-CREATE TABLE Jugador_2(
- DNI integer NOT NULL,
- Nro_Partida integer NOT NULL,
-FOREIGN KEY (DNI) REFERENCES Usuario (DNI),
-FOREIGN KEY (Nro_Partida) REFERENCES Partida (Nro_Partida),
-PRIMARY KEY (DNI,Nro_Partida));
 
