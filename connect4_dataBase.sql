@@ -3,6 +3,24 @@
 --     AUTHORIZATION postgres;
   SET SEARCH_PATH = 'connect4_db';
 
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
+
+
+
+
+
+
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
+
+
+
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
 
 CREATE TABLE Usuario(
  DNI integer UNIQUE NOT NULL  PRIMARY KEY,
@@ -32,12 +50,21 @@ CREATE TABLE Partida(
  Nro_Partida serial UNIQUE NOT NULL PRIMARY KEY,
  Fecha_inicio date,
  Fecha_fin date,-- LA HORA TE LA PONE JUNTO CON LA FECHA
+ Estado varchar(20),
  UserJ1 integer,
  UserJ2 integer,
  idGrid integer,
 CONSTRAINT FKJ1 FOREIGN KEY (UserJ1) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKJ2 FOREIGN KEY (UserJ2) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKGrid FOREIGN KEY (idGrid) REFERENCES Grid(id) ON DELETE CASCADE ON UPDATE CASCADE);
+
+
+CREATE TABLE Ganador(
+ Nro_Partida integer,
+ DNIUser integer,
+CONSTRAINT FKnroP FOREIGN KEY (Nro_Partida) REFERENCES Partida(Nro_Partida) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FKUser FOREIGN KEY (DNIUser) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT PKwin PRIMARY KEY (Nro_Partida,DNIUser));
 
 
 CREATE TABLE OrdenF(
@@ -51,3 +78,6 @@ CONSTRAINT FKid_fichaY FOREIGN KEY (Y) REFERENCES Ficha(Y) ON DELETE CASCADE ON 
 CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 
 
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
