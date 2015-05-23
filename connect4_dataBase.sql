@@ -6,7 +6,18 @@
 -- *********************************************************************************************
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
+create or replace function function_auditoria_usuarios_eliminados ()
+returns trigger as $$
+  begin
+  insert into ExUser (Fecha,DNI,meElimino) 
+              values (now(),old.DNI,USER);
+  return new;
+  end;
+$$ language plpgsql;
 
+create trigger leopardo_auditoria_usuarios_eliminados
+after delete on Usuario
+for each row execute procedure function_auditoria_usuarios_eliminados();
 
 
 
@@ -15,7 +26,7 @@
 -- *********************************************************************************************
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
-
+-- http://www.swapbytes.com/como-implementar-auditoria-simple-postgresql/
 
 
 -- *********************************************************************************************
@@ -28,11 +39,11 @@ CREATE TABLE Usuario(
  Apellido varchar(50));
 
 CREATE TABLE ExUser(
- Id serial UNIQUE NOT NULL PRIMARY KEY,
+ Id serial UNIQUE NOT NULL,
  Fecha date,
  DNI integer,
- meElimino varchar(30),
-CONSTRAINT FKdni FOREIGN KEY (DNI) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE);
+ meElimino character(45) NOT NUL);
+--CONSTRAINT FKdni FOREIGN KEY (DNI) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE);
 
 CREATE TABLE Grid(
  Id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -81,3 +92,14 @@ CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 -- *********************************************************************************************
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
+
+
+insert into Usuario (DNI, Nombre, Apellido)
+	values 
+	(1,'Juan','Perez'),
+	(2,'Jose','Garcia'),
+	(3,'Marcela','A'),
+	(4,'Carlos','Gardel'),
+	(5,'Luciano','Juarez'),
+	(6,'Luca','Prodan');
+
