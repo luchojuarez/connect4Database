@@ -1,32 +1,7 @@
-﻿
+
 --    CREATE SCHEMA connect4_db
 --     AUTHORIZATION postgres;
   SET SEARCH_PATH = 'connect4_db';
-
--- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
--- *********************************************************************************************
-create or replace function function_auditoria_usuarios_eliminados ()
-returns trigger as $$
-  begin
-  insert into ExUser (Fecha,DNI,meElimino) 
-              values (now(),old.DNI,USER);
-  return new;
-  end;
-$$ language plpgsql;
-
-create trigger leopardo_auditoria_usuarios_eliminados
-after delete on Usuario
-for each row execute procedure function_auditoria_usuarios_eliminados();
-
-
-
-
-
--- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
--- *********************************************************************************************
--- http://www.swapbytes.com/como-implementar-auditoria-simple-postgresql/
 
 
 -- *********************************************************************************************
@@ -93,13 +68,41 @@ CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
+create or replace function function_auditoria_usuarios_eliminados ()
+returns trigger as $$
+  begin
+  insert into ExUser (Fecha,DNI,meElimino) 
+              values (now(),old.DNI,USER);
+  return new;
+  end;
+$$ language plpgsql;
 
-insert into Usuario (DNI, Nombre, Apellido)
-	values 
-	(1,'Juan','Perez'),
-	(2,'Jose','Garcia'),
-	(3,'Marcela','A'),
-	(4,'Carlos','Gardel'),
-	(5,'Luciano','Juarez'),
-	(6,'Luca','Prodan');
+create trigger leopardo_auditoria_usuarios_eliminados
+after delete on Usuario
+for each row execute procedure function_auditoria_usuarios_eliminados();
 
+
+
+
+create or replace function function_solapamiento_fecha()
+returns trigger as $$
+  begin
+  if (new.Fecha_inicio = old.Fecha_fin) then
+    return old;
+  end if;
+  end;
+$$ language plpgsql;
+
+
+create trigger trigger_solapamiento_fecha
+before insert on Partida
+for each row execute procedure function_solapamiento_fecha();
+
+
+-- *********************************************************************************************
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- *********************************************************************************************
+-- **********http://www.swapbytes.com/como-implementar-auditoria-simple-postgresql/*************
