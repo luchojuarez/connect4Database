@@ -7,8 +7,22 @@
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 
+create function funcion_solapamiento_fecha () returns trigger as '	
+DECLARE
+
+partidasJugador1 Partida;
+partidasJugador2 Partida;
+
+BEGIN
 
 
+
+-- buscar todas las partidas de la fecha actual del jugador 1 
+  
+OPEN partidasJugador1 FOR SELECT * FROM Partida Natural Join Usuario 
+	WHERE NEW.Partida.UserJ1 = Usuario.DNI OR Usuario.DNI = Partida.UserJ2;  
+
+'
 
 
 
@@ -50,6 +64,8 @@ CREATE TABLE Partida(
  Nro_Partida serial UNIQUE NOT NULL PRIMARY KEY,
  Fecha_inicio date,
  Fecha_fin date,-- LA HORA TE LA PONE JUNTO CON LA FECHA
+ Hs_inicio date,
+ Hs_fin date,
  Estado varchar(20),
  UserJ1 integer,
  UserJ2 integer,
