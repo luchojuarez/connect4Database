@@ -1,4 +1,4 @@
-﻿
+
 --    CREATE SCHEMA connect4_db
 --     AUTHORIZATION postgres;
   SET SEARCH_PATH = 'connect4_db';
