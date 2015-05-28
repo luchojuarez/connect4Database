@@ -134,7 +134,10 @@ returns trigger as $$
     maxJ2 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2 );
     if ((maxJ1 is NULL)and(maxJ2 is NULL)) then -- si los user nunca jugaron..
       return new;
-  	 raise exception 'PartidaNoFinalizadaException';-- sino por ahora tiro una exception
+    else
+      if (((maxJ1 is not NULL)and(maxJ2 is NULL)) or ((maxJ1 is  NULL)and(maxJ2 is not NULL)) or ((maxJ1 is not  NULL)and(maxJ2 is not NULL))) then
+    	 raise exception 'PartidaNoFinalizadaException';-- sino por ahora tiro una exception
+      end if; 
     end if;
   end;
 $$ language plpgsql;
