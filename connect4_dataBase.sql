@@ -127,14 +127,13 @@ for each row execute procedure function_auditoria_usuarios_eliminados();
 create or replace function function_solapamiento_fecha()
 returns trigger as $$
   declare 
-  partidaNulaJ1 date;
-  partidaNulaJ2 date;
+  maxJ1 date;
+  maxJ2 date;
   begin
-    partidaNulaJ1 := (select Fecha_fin from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1);
-    partidaNulaJ2 := (select Fecha_fin from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2);
-    if ((partidaNulaJ1 is NULL)and(partidaNulaJ2 is NULL)) then -- si los user nunca jugaron..
+    maxJ1 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1 );
+    maxJ2 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2 );
+    if ((maxJ1 is NULL)and(maxJ2 is NULL)) then -- si los user nunca jugaron..
       return new;
-    ELSIF ((partidaNulaJ1 is not NULL)or(partidaNulaJ2 is not NULL)) then
   	 raise exception 'PartidaNoFinalizadaException';-- sino por ahora tiro una exception
     end if;
   end;
