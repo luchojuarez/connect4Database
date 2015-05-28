@@ -1,3 +1,5 @@
+--  conect4_dataBase.sql
+
 -- *************************************************************************************************
 -- *************************************************************************************************
 -- *************************************************************************************************
@@ -9,6 +11,7 @@
 --    > CIBILS, JUAN IGNACIO
 
 -- MOTOR DE BASE DE DATOS UTILIZADO: POSTGRES
+-- CREACIONES DE TABLAS Y TRIGGERS
 
 -- *************************************************************************************************
 -- *************************************************************************************************
@@ -60,12 +63,12 @@ CREATE TABLE Partida(
  Estado valor_tipo_estado,
  UserJ1 integer,
  UserJ2 integer,
- idGrid integer,
+ idGrilla integer,
  win integer,
 CONSTRAINT FKJ1 FOREIGN KEY (UserJ1) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKJ2 FOREIGN KEY (UserJ2) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKwin FOREIGN KEY (win) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKGrid FOREIGN KEY (idGrid) REFERENCES Grid(id) ON DELETE CASCADE ON UPDATE CASCADE);
+CONSTRAINT FKGrilla FOREIGN KEY (idGrilla) REFERENCES Grilla(id) ON DELETE CASCADE ON UPDATE CASCADE);
 
 
 
@@ -75,10 +78,12 @@ CREATE TABLE OrdenF(
  X integer NOT NULL,
  Y integer NOT NULL,
  Nro_ficha integer NOT NULL,
+ Id_ficha integer NOT NULL,
 CONSTRAINT FKpartida FOREIGN KEY (Nro_Partida) REFERENCES Partida(Nro_Partida) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKid_fichaX FOREIGN KEY (X) REFERENCES Ficha(X) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKid_fichaY FOREIGN KEY (Y) REFERENCES Ficha(Y) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
+CONSTRAINT FKfichaX FOREIGN KEY (X) REFERENCES Ficha(X) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FKfichaY FOREIGN KEY (Y) REFERENCES Ficha(Y) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FKid_ficha FOREIGN KEY (Id_ficha) REFERENCES Ficha(Id) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y,Id_ficha));
 
 
 -- *********************************************************************************************
@@ -154,113 +159,81 @@ for each row execute procedure function_solapamiento_fecha();
 
 
 -- >>>>>>>>>>>>>>>>>>>>>>> LEOPARDO PARA EL CONTROL DE RANGO DE LAS FICHAS <<<<<<<<<<<<<<<<<<<<<<<
+  -- LA IDEA ES QUE SE CREE UNA FICHA EN LA TABLA FICHA Y CUANDO CREAMOS LA FILA EN LA TABLA
+  -- ORDENF AHI VERIFICAR SI ESAS FICHAS QUE SE PASAN COMO CLAVES FORANEAS ESTAN EN UN
+  -- RANGO VALIDO EN LA GRILLA QUE CORRESPONDE AL ID_GRILLA CORRESPONDIENTE A ESA FILA
+  -- (NO SE CHECKEA EN LA TABLA FICHA PORQUE COMO SABES A QUE GRILLA VA A CORRESPONDER???)
+
+  -- checkea que cuando se inserta una ficha, si es el mismo nro de partida las FICHAS
+  -- no pueden ser iguales x=x "y" y=y (no se pueden insertar dos fichas en la misma posicion)
+  -- tmb  se checkea que esten en rango de las 
+  -- dimensiones de la grilla
 
 create or replace function function_check_rango_fichas ()
 returns trigger as $$
   
   declare
+    idgrilla integer;
     xGrilla integer;
     yGrilla integer;
+    xFicha integer;
+    yFicha integer;
   
-  begin
+  BEGIN
+    -- buscamos el idGrilla de la partida correspondiente para saber sus dimensiones
+    idgrilla := (SELECT idGrilla FROM Partida WHERE new.Nro_Partida = Partida.Nro_Partida);
+    -- buscamos el x del idGrilla buscado anteriormente
+    xGrilla := (SELECT X FROM Grilla WHERE idgrilla = Grilla.Id);
+    -- buscamos el y del idGrilla buscado anteriormente
+    yGrilla := (SELECT Y FROM Grilla WHERE idgrilla = Grilla.Id);
 
+    -- si el "x" y el "y" estan en un rango valido
+    IF((new.X <= xGrilla) and (new.Y <= yGrilla)) THEN
 
-  if()
-    insert into Ficha (X,Y) 
-                values (new.X,new.Y);
-    return new;
-  end;
+      -- vemos si ese x esta vacio o no
+      xFicha := (SELECT X FROM OrdenF WHERE ((new.Nro_Partida = OrdenF.Nro_Partida) and (new.X = OrdenF.X)));
+      -- si esta vacio ...
+      IF(xFicha IS NULL) THEN
+        -- y el "y" es 0, (osea la base del tablero) insertamos
+        IF(new.Y = 0) THEN
+          return new;
+        ELSE 
+          raise exception 'como esta columna esta vacia el unico valor valido es la base.. osea con Y=0 ';
+        END IF;  
+      ELSE  
+        -- si no esta vacio el x (osea que la columna tiene fichas) 
+        -- vemos que el "Y" sea valido (osea que este arriba de la ultima ficha colocada en esa columna)   
+        -- buscamos el maximo "Y" de la columna del "X"
+        yFicha := (SELECT MAX(Y) FROM OrdenF WHERE ((new.Nro_Partida = OrdenF.Nro_Partida) and (new.X = OrdenF.X)));
+        -- si el "Y" a insertar es 1 mayor al maximo "y" de la columna insertamos..
+        IF(new.Y = yFicha+1) THEN
+          return new;  
+        ELSE 
+          raise exception 'el "Y" a insertar no es valido';
+        END IF;  
+      END IF;  
+    ELSE
+      raise exception 'las posiciones de los (X,Y) a insertar estan fuera del rango de la grilla';
+    END IF;        
+  END;
 $$ language plpgsql;
 
 create trigger leopardo_function_check_rango_fichas
-  before insert into Ficha
+  before insert on OrdenF
 for each row execute procedure function_check_rango_fichas();
 
--- como veo de que partida es la ficha a ingresar
+ -- AL CONTROLAR EL RANGO EN LA TABLA OrdenF SE PUEDE DAR EL CASO DE QUE LA TABLA Ficha 
+ -- ESTE LLENA DE FICHAS QUE NUNCA SE INGRESARON EN NINGUNA PARTIDA PORQUE FUERON INVALIDAS
+ -- ESTO VA A PROVOCAR QUE UNA TABLA ESTE LLENA DE DATOS INVALIDOS Y DESPUES SI TUVIERAMOS 
+ -- QUE HACER ALGO CON LOS DATOS DE DICHA TABLA NO SABRIAMOS QUE DATOS SON VALIDOS Y CUALES NO
+ -- >>> UNA SOLUCION A ESO SERIA CONTROLARLO DESDE JAVA COSA DE QUE SI NO SE INSERTO EN LA TABLA OrdenF
+ --     HACER UN ROLLBACK EN LA TABLA Ficha COSA DE QUE NO SE LLENE DE DATOS INVALIDOS
+
 
 -- >>>>>>>>>>>>>>>>>>>>> FIN LEOPARDO PARA EL CONTROL DE RANGO DE LAS FICHAS <<<<<<<<<<<<<<<<<<<<<<<
 
 
 
-
-
-
 -- *********************************************************************************************
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN LEOPARDOS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
--- *********************************************************************************************
--- **********http://www.swapbytes.com/como-implementar-auditoria-simple-postgresql/*************
-
-
-
-
-
-
-
--- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
--- *********************************************************************************************
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT EN LA TABLA Usuario <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-INSERT    INTO Usuario(DNI,Nombre,Apellido) 
-          VALUES (1, 'Marcelo',  'Barovero'),
-                 (3, 'Gabriel',  'Mercado'),
-                 (2, 'Jonathan', 'Maidana'),
-                 (6, 'Ramiro',   'Funes Mori'),
-                 (3, 'Leonel',   'Vangioni'),
-                 (8, 'Carlos',   'Sanchez'),
-                 (23, 'Leonardo', 'Ponzio'),
-                 (5, 'Matias',   'Kraneviter'),
-                 (7, 'Ariel',    'Rojas'),
-                 (11,'Rodrigo',  'Mora'),
-                 (19,'Teofilo',  'Gutierrez');
-
-
--- descomentar para probar trigger de auditoria de usuarios eliminados
--- DELETE FROM Usuario WHERE DNI=1;
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN INSERT EN LA TABLA Usuario <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT EN LA TABLA Grilla <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-INSERT    INTO Grilla(X,Y) 
-          VALUES (6,7);-- DEFAULT
-
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN INSERT EN LA TABLA Grilla <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT EN LA TABLA Partida <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
-INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrid) 
-          VALUES (now(),now(),'Terminado',1,2,1),
-                 (now(),now(),'Terminado',3,4,1),
-                 (now(),now(),'Terminado',5,6,1);
-
-
--- para probar el trigger de solapamiento de fechas crear una partida que no haya terminado
--- o dos partidas que involucren a los mismos jugadores o a uno de los dos el mismo dia...
-
-
-
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN INSERT EN LA TABLA Partida <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
-
-
-
-
--- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN INSERT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
