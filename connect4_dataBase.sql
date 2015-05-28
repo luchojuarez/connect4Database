@@ -86,16 +86,24 @@ for each row execute procedure function_auditoria_usuarios_eliminados();
 
 
 
-
 create or replace function function_solapamiento_fecha()
 returns trigger as $$
+  declare 
+  partidaNulaJ1 date;
+  partidaNulaJ2 date;
   begin
-  if (new.Fecha_inicio = old.Fecha_fin) then
-    return old;
+  partidaNulaJ1 := (select Fecha_fin from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1);
+  partidaNulaJ2 := (select Fecha_fin from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2);
+  if ((partidaNulaJ1 is NULL)and(partidaNulaJ2 is NULL)) then
+    return new;
+  ELSIF ((partidaNulaJ1 is not NULL)or(partidaNulaJ2 is not NULL)) then
+  	raise exception 'PartidaNoFinalizadaException';
   end if;
   end;
 $$ language plpgsql;
 
+
+select Fecha_fin from Partida where UserJ1=3 or UserJ2=3;
 
 create trigger trigger_solapamiento_fecha
 before insert on Partida
