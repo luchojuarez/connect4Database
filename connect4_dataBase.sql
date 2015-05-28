@@ -25,7 +25,7 @@ CREATE DOMAIN  valor_tipo_estado AS VARCHAR(50)
   CHECK (Value in ('En Curso','Terminado')); 
 
 -- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CREATE TABLES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 
 CREATE TABLE Usuario(
@@ -82,7 +82,7 @@ CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 
 
 -- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN CREATE TABLES<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN CREATE TABLES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 
 
@@ -91,10 +91,10 @@ CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 
 
 -- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> LEOPARDOS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 
--- >>>>>>>>>>>>>>>>>>>>>LEOPARDO PARA LA AUDITORIA DE USUARIOS ELIMINADOS<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>> LEOPARDO PARA LA AUDITORIA DE USUARIOS ELIMINADOS <<<<<<<<<<<<<<<<<<<<<<<
 
 create or replace function function_auditoria_usuarios_eliminados ()
 returns trigger as $$
@@ -110,13 +110,19 @@ after delete on Usuario
 for each row execute procedure function_auditoria_usuarios_eliminados();
 
 
--- >>>>>>>>>>>>>>>>>>>>>FIN LEOPARDO PARA LA AUDITORIA DE USUARIOS ELIMINADOS<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>> FIN LEOPARDO PARA LA AUDITORIA DE USUARIOS ELIMINADOS <<<<<<<<<<<<<<<<<<<<
 
 
 
 
--- >>>>>>>>>>>>>>>>>>>>>LEOPARDO PARA EL SOLAPAMIENTO DE FECHAS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+-- >>>>>>>>>>>>>>>>>>>>> LEOPARDO PARA EL SOLAPAMIENTO DE FECHAS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- DE QUE TIPO TIENEN Q SER PARTIDANULAJ1 Y EL OTRO Y VER COMO SE MANEJAN LOS SET
+-- PORQ TE PUEDE DEVOLVER VARIAS COSAS ESOS SELECT
+-- Y PORQUE NO ME DEVUELVE NULL CUANDO ME LO TENDRIA QUE DEVOLVER(osea cuando los user nunca jugaron)
+-- DESPUES TENGO QUE CHECKEAR EL MAXIMO DE LAS FECHAS DE LOS USUARIOS Y QUE ELLAS SEAN DISTINTAS
+-- A LA NOW() OSEA A LA QUE ESTOY POR INGRESAR XQ PUEDO JUGAR UNA PARTIDA POR DIA SIEMPRE Y CUANDO
+-- HAYA TERMINADO LA PARTIDA ACTUAL... Y COMO SUPONEMOS QUE SABEMOS LA FECHA_FIN SOLO ES CHECKEAR 
+-- QUE SEA DISTINTA A LA FECHA_FIN
 
 create or replace function function_solapamiento_fecha()
 returns trigger as $$
@@ -124,29 +130,55 @@ returns trigger as $$
   partidaNulaJ1 date;
   partidaNulaJ2 date;
   begin
-  partidaNulaJ1 := (select Fecha_fin from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1);
-  partidaNulaJ2 := (select Fecha_fin from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2);
-  if ((partidaNulaJ1 is NULL)and(partidaNulaJ2 is NULL)) then
-    return new;
-  ELSIF ((partidaNulaJ1 is not NULL)or(partidaNulaJ2 is not NULL)) then
-  	raise exception 'PartidaNoFinalizadaException';
-  end if;
+    partidaNulaJ1 := (select Fecha_fin from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1);
+    partidaNulaJ2 := (select Fecha_fin from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2);
+    if ((partidaNulaJ1 is NULL)and(partidaNulaJ2 is NULL)) then -- si los user nunca jugaron..
+      return new;
+    ELSIF ((partidaNulaJ1 is not NULL)or(partidaNulaJ2 is not NULL)) then
+  	 raise exception 'PartidaNoFinalizadaException';-- sino por ahora tiro una exception
+    end if;
   end;
 $$ language plpgsql;
 
 
 select Fecha_fin from Partida where UserJ1=3 or UserJ2=3;
 
-create trigger trigger_solapamiento_fecha
-before insert on Partida
+create trigger leopardo_solapamiento_fecha
+before insert into Partida
 for each row execute procedure function_solapamiento_fecha();
 
 
--- >>>>>>>>>>>>>>>>>>>>>FIN LEOPARDO PARA EL SOLAPAMIENTO DE FECHAS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>> FIN LEOPARDO PARA EL SOLAPAMIENTO DE FECHAS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 
 
+-- >>>>>>>>>>>>>>>>>>>>>>> LEOPARDO PARA EL CONTROL DE RANGO DE LAS FICHAS <<<<<<<<<<<<<<<<<<<<<<<
+
+create or replace function function_check_rango_fichas ()
+returns trigger as $$
+  
+  declare
+    xGrilla integer;
+    yGrilla integer;
+  
+  begin
+
+
+  if()
+    insert into Ficha (X,Y) 
+                values (new.X,new.Y);
+    return new;
+  end;
+$$ language plpgsql;
+
+create trigger leopardo_function_check_rango_fichas
+  before insert into Ficha
+for each row execute procedure function_check_rango_fichas();
+
+-- como veo de que partida es la ficha a ingresar
+
+-- >>>>>>>>>>>>>>>>>>>>> FIN LEOPARDO PARA EL CONTROL DE RANGO DE LAS FICHAS <<<<<<<<<<<<<<<<<<<<<<<
 
 
 
@@ -154,10 +186,9 @@ for each row execute procedure function_solapamiento_fecha();
 
 
 -- *********************************************************************************************
--- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>FIN LEOPARDOS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN LEOPARDOS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 -- *********************************************************************************************
 -- **********http://www.swapbytes.com/como-implementar-auditoria-simple-postgresql/*************
-
 
 
 
@@ -196,8 +227,6 @@ INSERT    INTO Usuario(DNI,Nombre,Apellido)
 
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT EN LA TABLA Grilla <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
 
 INSERT    INTO Grilla(X,Y) 
           VALUES (6,7);-- DEFAULT
