@@ -19,8 +19,8 @@
 
 
 
---    CREATE SCHEMA connect4_db
---     AUTHORIZATION postgres;
+  CREATE SCHEMA connect4_db
+    AUTHORIZATION postgres;
   SET SEARCH_PATH = 'connect4_db';
 
 
@@ -40,7 +40,7 @@ CREATE TABLE ExUsuario(
  Id serial UNIQUE NOT NULL,
  Fecha date,
  DNI integer,
- meElimino character(45) NOT NUL);
+ meElimino character(45) NOT NULL);
 --CONSTRAINT FKdni FOREIGN KEY (DNI) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE);
 
 CREATE TABLE Grilla(
@@ -50,16 +50,17 @@ CREATE TABLE Grilla(
 
 
 CREATE TABLE Ficha(
- Id serial UNIQUE NOT NULL PRIMARY KEY,
+ Id serial UNIQUE NOT NULL,
  X integer UNIQUE NOT NULL,
  Y integer UNIQUE NOT NULL,
 CONSTRAINT PKficha PRIMARY KEY (Id,X,Y));
-
+-- si pongo los unique no me deja hacer los insert de un juego porque se repiten los "y" o los "x"
+-- no te toma todo como clave... y si no le pongo unique no compila
 
 CREATE TABLE Partida(
  Nro_Partida serial UNIQUE NOT NULL PRIMARY KEY,
  Fecha_inicio date,
- Fecha_fin date,-- LA HORA TE LA PONE JUNTO CON LA FECHA
+ Fecha_fin date,
  Estado valor_tipo_estado,
  UserJ1 integer,
  UserJ2 integer,
@@ -68,7 +69,7 @@ CREATE TABLE Partida(
 CONSTRAINT FKJ1 FOREIGN KEY (UserJ1) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKJ2 FOREIGN KEY (UserJ2) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKwin FOREIGN KEY (win) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKGrilla FOREIGN KEY (idGrilla) REFERENCES Grilla(id) ON DELETE CASCADE ON UPDATE CASCADE);
+CONSTRAINT FKGrilla FOREIGN KEY (idGrilla) REFERENCES Grilla(Id) ON DELETE CASCADE ON UPDATE CASCADE);
 
 
 
@@ -121,35 +122,64 @@ for each row execute procedure function_auditoria_usuarios_eliminados();
 
 
 -- >>>>>>>>>>>>>>>>>>>>> LEOPARDO PARA EL SOLAPAMIENTO DE FECHAS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
--- DE QUE TIPO TIENEN Q SER PARTIDANULAJ1 Y EL OTRO Y VER COMO SE MANEJAN LOS SET
--- PORQ TE PUEDE DEVOLVER VARIAS COSAS ESOS SELECT
--- Y PORQUE NO ME DEVUELVE NULL CUANDO ME LO TENDRIA QUE DEVOLVER(osea cuando los user nunca jugaron)
--- DESPUES TENGO QUE CHECKEAR EL MAXIMO DE LAS FECHAS DE LOS USUARIOS Y QUE ELLAS SEAN DISTINTAS
--- A LA NOW() OSEA A LA QUE ESTOY POR INGRESAR XQ PUEDO JUGAR UNA PARTIDA POR DIA SIEMPRE Y CUANDO
--- HAYA TERMINADO LA PARTIDA ACTUAL... Y COMO SUPONEMOS QUE SABEMOS LA FECHA_FIN SOLO ES CHECKEAR 
--- QUE SEA DISTINTA A LA FECHA_FIN
+-- LA IDEA ES BUSCAR LA ULTIMA Fecha_fin DE LOS DOS USUARIOS A INSERTAR, TANTO CUANDO ESTAN
+-- COMO UserJ1 Y UserJ2, Y DE AHI CHECKEAMOS, SI LOS 4 CASOS 
+-- (2 NULL / 1 NULL Y 1 NO NULL / 1 NO NULL Y 1 NULL / 2 NO NULL) Y DESPUES CHEKEAR QUE CUANDO
+-- SON NO NULL VER SI LA MAX Fecha_fin QUE TIENEN ES DISTINTA A LA ACTUAL QUE ES LA QUE INSERTAMOS  
 
 create or replace function function_solapamiento_fecha()
 returns trigger as $$
   declare 
-  partidaNulaJ1 date;
-  partidaNulaJ2 date;
+  maxJ1 date;
+  maxJ2 date;
   begin
-    partidaNulaJ1 := (select Fecha_fin from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1);
-    partidaNulaJ2 := (select Fecha_fin from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2);
-    if ((partidaNulaJ1 is NULL)and(partidaNulaJ2 is NULL)) then -- si los user nunca jugaron..
+    -- busco la maxima fecha_fin(la ultima fecha) del jugador 1
+    maxJ1 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1 );
+    -- busco la maxima fecha_fin(la ultima fecha) del jugador 2
+    maxJ2 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ2 or UserJ2=new.UserJ2 );
+    -- si dos son null significa que los user nunca jugaron..entonces inserto
+    IF ((maxJ1 is NULL)and(maxJ2 is NULL)) THEN 
       return new;
-    ELSIF ((partidaNulaJ1 is not NULL)or(partidaNulaJ2 is not NULL)) then
-  	 raise exception 'PartidaNoFinalizadaException';-- sino por ahora tiro una exception
-    end if;
-  end;
+    ELSE
+      -- si si da el caso en donde maxJ1 no es null, checkeo que el que no es null
+      -- la ultima fecha de este sea distinta a la que se va a insertar, si lo es inserto..
+      IF((maxJ1 is not NULL)and(maxJ2 is NULL)) THEN
+        IF(maxJ1 != new.Fecha_fin) THEN
+          return new;
+        ELSE
+          -- sino tiro una exception
+          raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';
+        END IF;
+      ELSE    
+        -- si si da el caso en donde maxJ2 no es null, checkeo que el que no es null
+        -- la ultima fecha de este sea distinta a la que se va a insertar, si lo es inserto..
+        IF((maxJ1 is  NULL)and(maxJ2 is not NULL)) THEN
+          IF(maxJ2 != new.Fecha_fin) THEN
+            return new;
+          ELSE
+            -- sino tiro una exception
+            raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';
+          END IF;
+        ELSE    
+          -- si si da el caso en donde maxJ1 y maxJ2 no es null, checkeo que 
+          -- la ultima fecha de los dos sea distinta a la que se va a insertar, si lo es inserto..
+          IF((maxJ1 is not  NULL)and(maxJ2 is not NULL)) THEN
+            IF((maxJ1 != new.Fecha_fin) and (maxJ2 != new.Fecha_fin)) THEN
+              return new;
+            ELSE
+              -- sino tiro una exception
+              raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';    
+            END IF;
+          END IF;
+        END IF;
+      END IF;
+    END IF;        
+  END;
 $$ language plpgsql;
 
 
-select Fecha_fin from Partida where UserJ1=3 or UserJ2=3;
-
 create trigger leopardo_solapamiento_fecha
-before insert into Partida
+before insert on Partida
 for each row execute procedure function_solapamiento_fecha();
 
 
