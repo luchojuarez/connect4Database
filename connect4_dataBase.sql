@@ -38,10 +38,9 @@ CREATE TABLE Usuario(
 
 CREATE TABLE ExUsuario(
  Id serial UNIQUE NOT NULL,
- Fecha date,
+ Fecha timestamp,
  DNI integer,
  meElimino character(45) NOT NULL);
---CONSTRAINT FKdni FOREIGN KEY (DNI) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE);
 
 CREATE TABLE Grilla(
  Id serial UNIQUE NOT NULL PRIMARY KEY,
@@ -50,25 +49,22 @@ CREATE TABLE Grilla(
 
 
 CREATE TABLE Ficha(
- Id serial UNIQUE NOT NULL,
- X integer UNIQUE NOT NULL,
- Y integer UNIQUE NOT NULL,
-CONSTRAINT PKficha PRIMARY KEY (Id,X,Y));
--- si pongo los unique no me deja hacer los insert de un juego porque se repiten los "y" o los "x"
--- no te toma todo como clave... y si no le pongo unique no compila
+ X integer NOT NULL,
+ Y integer NOT NULL,
+CONSTRAINT PKficha PRIMARY KEY (X,Y));
 
 CREATE TABLE Partida(
  Nro_Partida serial UNIQUE NOT NULL PRIMARY KEY,
- Fecha_inicio date,
- Fecha_fin date,
+ Fecha_inicio timestamp,
+ Fecha_fin timestamp,
  Estado valor_tipo_estado,
  UserJ1 integer,
  UserJ2 integer,
  idGrilla integer,
- win integer,
+ Ganador integer,
 CONSTRAINT FKJ1 FOREIGN KEY (UserJ1) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKJ2 FOREIGN KEY (UserJ2) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKwin FOREIGN KEY (win) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT FKganador FOREIGN KEY (Ganador) REFERENCES Usuario(DNI) ON DELETE CASCADE ON UPDATE CASCADE,
 CONSTRAINT FKGrilla FOREIGN KEY (idGrilla) REFERENCES Grilla(Id) ON DELETE CASCADE ON UPDATE CASCADE);
 
 
@@ -79,12 +75,9 @@ CREATE TABLE OrdenF(
  X integer NOT NULL,
  Y integer NOT NULL,
  Nro_ficha integer NOT NULL,
- Id_ficha integer NOT NULL,
 CONSTRAINT FKpartida FOREIGN KEY (Nro_Partida) REFERENCES Partida(Nro_Partida) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKfichaX FOREIGN KEY (X) REFERENCES Ficha(X) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKfichaY FOREIGN KEY (Y) REFERENCES Ficha(Y) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT FKid_ficha FOREIGN KEY (Id_ficha) REFERENCES Ficha(Id) ON DELETE CASCADE ON UPDATE CASCADE,
-CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y,Id_ficha));
+CONSTRAINT FKficha FOREIGN KEY (X,Y) REFERENCES Ficha(X,Y) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 
 
 -- *********************************************************************************************
@@ -203,7 +196,7 @@ create or replace function function_check_rango_fichas ()
 returns trigger as $$
   
   declare
-    idgrilla integer;
+    idgri integer;
     xGrilla integer;
     yGrilla integer;
     xFicha integer;
@@ -211,24 +204,29 @@ returns trigger as $$
   
   BEGIN
     -- buscamos el idGrilla de la partida correspondiente para saber sus dimensiones
-    idgrilla := (SELECT idGrilla FROM Partida WHERE new.Nro_Partida = Partida.Nro_Partida);
+    idgri := (SELECT idGrilla FROM Partida WHERE new.Nro_Partida = Partida.Nro_Partida);
     -- buscamos el x del idGrilla buscado anteriormente
-    xGrilla := (SELECT X FROM Grilla WHERE idgrilla = Grilla.Id);
+    xGrilla := (SELECT X FROM Grilla WHERE idgri = Grilla.Id);
     -- buscamos el y del idGrilla buscado anteriormente
-    yGrilla := (SELECT Y FROM Grilla WHERE idgrilla = Grilla.Id);
+    yGrilla := (SELECT Y FROM Grilla WHERE idgri = Grilla.Id);
 
     -- si el "x" y el "y" estan en un rango valido
     IF((new.X <= xGrilla) and (new.Y <= yGrilla)) THEN
 
       -- vemos si ese x esta vacio o no
-      xFicha := (SELECT X FROM OrdenF WHERE ((new.Nro_Partida = OrdenF.Nro_Partida) and (new.X = OrdenF.X)));
+      xFicha := (SELECT X FROM OrdenF WHERE ((new.Nro_Partida = OrdenF.Nro_Partida) and (new.X = OrdenF.X) and (new.Y = OrdenF.Y)));
       -- si esta vacio ...
       IF(xFicha IS NULL) THEN
         -- y el "y" es 0, (osea la base del tablero) insertamos
         IF(new.Y = 0) THEN
           return new;
         ELSE 
-          raise exception 'como esta columna esta vacia el unico valor valido es la base.. osea con Y=0 ';
+          yFicha := (SELECT MAX(Y) FROM OrdenF WHERE ((new.Nro_Partida = OrdenF.Nro_Partida) and (new.X = OrdenF.X)));
+          IF(new.Y = yFicha+1) THEN
+            return new;
+          ELSE  
+            raise exception 'como esta columna esta vacia el unico valor valido es la base.. osea con Y=0 ';
+          END IF;  
         END IF;  
       ELSE  
         -- si no esta vacio el x (osea que la columna tiene fichas) 

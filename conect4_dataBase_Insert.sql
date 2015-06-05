@@ -74,8 +74,8 @@ INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrilla)
 
 -- DESCOMENTAR PARA PROBAR EL SOLAPAMIENTO DE FECHAS
 -- PARA QUE NO TE LO DEJE INSERTAR TENES QUE CREAR DOS PARTIDAS CON ALGUN USUARIO EN COMUN Y EL MISMO DIA
--- INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrid) 
---           VALUES (now(),now(),'Terminado',1,2,1),
+-- INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrilla) 
+--           VALUES (now(),now(),'Terminado',1,2,1);
 
 
 
@@ -113,14 +113,14 @@ INSERT    INTO Ficha(X,Y)
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> INSERT EN LA TABLA OrdenF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-INSERT    INTO OrdenF(Nro_Partida,X,Y,Nro_ficha,Id_ficha) 
-          VALUES (1,0,0,1,1),
-                 (1,1,0,2,2),
-                 (1,0,1,3,3),
-                 (1,1,1,4,4),
-                 (1,0,2,5,5),
-                 (1,1,2,6,6),
-                 (1,0,3,7,7);
+INSERT    INTO OrdenF(Nro_Partida,X,Y,Nro_ficha) 
+          VALUES (1,0,0,1),
+                 (1,1,0,2),
+                 (1,0,1,3),
+                 (1,1,1,4),
+                 (1,0,2,5),
+                 (1,1,2,6),
+                 (1,0,3,7);
 -- GANA UserJ1 
 -- _____________
 -- |-|-|-|-|-|-|
@@ -134,8 +134,8 @@ INSERT    INTO OrdenF(Nro_Partida,X,Y,Nro_ficha,Id_ficha)
 
 -- DESCOMENTAR PARA PROBAR EL CONTROL DE FICHAS
 -- ANTES DESCOMENTAR LA INSERCION EN LA TABLA FICHA QUE ME CREA LA FICHA CON ID=8 CON X=0 AND Y=0
--- INSERT    INTO OrdenF(Nro_Partida,X,Y,Nro_ficha,Id_ficha) 
---           VALUES (1,0,0,8,8),
+-- INSERT    INTO OrdenF(Nro_Partida,X,Y,Nro_ficha) 
+--           VALUES (1,0,0,8),
 
 
 -- >>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIN INSERT EN LA TABLA OrdenF <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
