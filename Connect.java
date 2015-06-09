@@ -32,7 +32,6 @@ public class Connect{
 		    String username = "postgres";
 		    String password = "root"; 
 		    System.out.println( "Hello World!" );
-		    Runtime.getRuntime().exec("clear");
 		    System.out.println();
 
 
@@ -351,7 +350,7 @@ public class Connect{
 
 	        String query = "select extract(hour from Fecha_inicio)   FROM Partida";
 		    PreparedStatement statement = connection.prepareStatement(query);
-		    ResultSet resultSet = statementJ1.executeQuery();
+		    ResultSet resultSet = statement.executeQuery();
 
 		   	mainMenu(connection);
 		 }
