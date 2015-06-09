@@ -278,9 +278,11 @@ public class Connect{
 		    ResultSet resultSet = statement.executeQuery();
 
 		    while(resultSet.next()) {
-				System.out.print(" DNI: " + resultSet.getString(1));
-				System.out.print("; Nombre: " + resultSet.getString(2));
-				System.out.print("; Apellido: " + resultSet.getString(3)) ;
+				System.out.print("; Fecha: " + resultSet.getString(2));
+				System.out.print("; DNI: " + resultSet.getString(3)) ;
+				System.out.print("; Nombre: " + resultSet.getString(4)) ;
+				System.out.print("; Apellido: " + resultSet.getString(5)) ;
+				System.out.print("; Me Elimino: " + resultSet.getString(6)) ;
 				System.out.print("\n   ");
 				System.out.print("\n   ");
 	    	}
@@ -341,10 +343,22 @@ public class Connect{
 	}
 
 	public static void gameMoreLong(Connection connection){
-		System.out.println("Sorry, in build..");
-		System.out.println();
-		System.out.println();
-    	mainMenu(connection);
+		try{
+			Scanner escaneo = new Scanner(System.in);
+			System.out.println("Ingresa el dni del jugador a consultar su partida mas larga");	
+			int	dni = escaneo.nextInt();
+
+	        String query = "select extract(hour from Fecha_inicio)   FROM Partida";
+		    PreparedStatement statement = connection.prepareStatement(query);
+		    ResultSet resultSet = statementJ1.executeQuery();
+
+		   	mainMenu(connection);
+		 }
+	    catch(SQLException sqle) {
+    		sqle.printStackTrace();
+    	    System.err.println("Error connecting: " + sqle);
+    	}
+
     }
 
 // FALTA:
