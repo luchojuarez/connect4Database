@@ -40,6 +40,8 @@ CREATE TABLE ExUsuario(
  Id serial UNIQUE NOT NULL,
  Fecha timestamp,
  DNI integer,
+ Nombre varchar(50),
+ Apellido varchar(50),
  meElimino character(45) NOT NULL);
 
 CREATE TABLE Grilla(
@@ -99,7 +101,7 @@ create or replace function function_auditoria_usuarios_eliminados ()
 returns trigger as $$
   begin
   insert into ExUsuario (Fecha,DNI,meElimino) 
-              values (now(),old.DNI,USER);
+              values (now(),old.DNI,old.Nombre,old.Apellido,USER);
   return new;
   end;
 $$ language plpgsql;
