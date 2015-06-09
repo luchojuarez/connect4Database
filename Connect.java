@@ -29,10 +29,11 @@ public class Connect{
 		try{
 					
 		    String driver = "org.postgresql.Driver";
-		    String url = "jdbc:postgresql://localhost:5432/postgres";
+		    String url = "jdbc:postgresql://127.0.0.1:5432/postgres";
 		    String username = "postgres";
 		    String password = "root"; 
 		    System.out.println( "Hello World!" );
+		    Runtime.getRuntime().exec("clear");
 		    System.out.println();
 
 
