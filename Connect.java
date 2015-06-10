@@ -23,15 +23,15 @@ import java.util.Scanner;
 
 public class Connect{
 	public static void main(String[] args) {
-
-
+	    // >> CONECCION A LA BASE DE DATOS
 		try{
 					
 		    String driver = "org.postgresql.Driver";
 		    String url = "jdbc:postgresql://localhost:5432/postgres";
 		    String username = "postgres";
 		    String password = "root"; 
-		    System.out.println( "Hello World!" );
+		    System.out.println();
+		    System.out.println( "Connect 4" );
 		    System.out.println();
 
 
@@ -56,56 +56,59 @@ public class Connect{
 	}
 
 	public static void mainMenu(Connection connection){
-
+	    // >> MENU
 		String respuesta;
 		char[] charArray;
 		char res;
 		do {
-			System.out.println("Presione 1 para Insertar Usuarios");
-			System.out.println("Presione 2 para Eliminar Usuarios");
-			System.out.println("Presione 3 Listar Partidas de ''X'' Jugador");
-			System.out.println("Presione 4 Listar Todas Las Partidas");
-			System.out.println("Presione 5 Listar Usuarios");
-			System.out.println("Presione 6 Listar ExUsuarios");
-			System.out.println("Presione 7 Listar Partidas Ganadas de ''X'' Jugador");
-			System.out.println("Presione 8 Listar Cantidad de Partidas Ganadas de Cada Jugador");
-			System.out.println("Presione 9 Listar la Partida Mas Larga");
-			System.out.println("Presione 10 Listar Todos Los Ganadores");
-			System.out.println("Presione 0 para salir");
+			System.out.println("Presione i (MINUSCULA) para Insertar Usuarios");
+			System.out.println("Presione r (MINUSCULA) para Eliminar Usuarios");
+			System.out.println("Presione 0 Listar Partidas de ''X'' Jugador");
+			System.out.println("Presione 1 Listar Todas Las Partidas");
+			System.out.println("Presione 2 Listar Usuarios");
+			System.out.println("Presione 3 Listar ExUsuarios");
+			System.out.println("Presione 4 Listar Partidas Ganadas de ''X'' Jugador");
+			System.out.println("Presione 5 Listar Cantidad de Partidas Ganadas de Cada Jugador");
+			System.out.println("Presione 6 Listar la Partida Mas Larga");
+			System.out.println("Presione 7 Listar Todos Los Ganadores");
+			System.out.println("Presione 8 Listar Todos Los Usuarios que no jugaron nunca");
+			System.out.println("Presione s (MINUSCULA) para salir");
 			Scanner escaneo = new Scanner(System.in);
 			respuesta = escaneo.nextLine();
 			charArray = respuesta.toCharArray();
 			res = charArray[0];
-		} while ((res != '1') && (res!='2')&& (res!='3')&& (res!='4')&& (res!='5')&& (res!='6')&& (res!='7')&& (res!='8')&& (res!='9')&&(res!='0'));
+		} while ((res != 'i') && (res!='r')&& (res!='0')&& (res!='1')&& (res!='2')&& (res!='3')&& (res!='4')&& (res!='5')&& (res!='6')&&(res!='7')&&(res!='8')&&(res!='s'));
 		
 		switch (res) {
-			case '1': insert(connection);
+			case 'i': insert(connection);
 				break;
-			case '2': remove(connection);
+			case 'r': remove(connection);
 				break;
-			case '3': listGames(connection);
+			case '0': listGames(connection);
 				break;
-			case '4': listAllGames(connection);
+			case '1': listAllGames(connection);
 				break;
-			case '5': listUserMan(connection);
+			case '2': listUserMan(connection);
 				break;
-			case '6': listExUserMan(connection);
+			case '3': listExUserMan(connection);
 				break;
-			case '7': gamesWin(connection);
+			case '4': gamesWin(connection);
 				break;
-			case '8': cantGamesWin(connection);
+			case '5': cantGamesWin(connection);
 				break;
-			case '9': gameMoreLong(connection);
+			case '6': gameMoreLong(connection);
 				break;
-			// case '10': theWinners(connection);
-			// 	break;
-			case '0': System.out.println("bye");
+			case '7': theWinners(connection);
+				break;
+			case '8': neverPlayConnect(connection);
+				break;
+			case 's': System.out.println("bye");
 				break;
 		}
 	}
 
 	public static void insert(Connection connection){
-
+	    // >> INSERTAR
 		try{
 			connection.setAutoCommit(false);
 			Scanner escaneo = new Scanner(System.in);
@@ -162,7 +165,9 @@ public class Connect{
             }
         }
 	}
+
 	public static void remove(Connection connection){
+	    // >> ELIMINAR
 		try{
 			connection.setAutoCommit(false);
 			Scanner escaneo = new Scanner(System.in);
@@ -212,7 +217,9 @@ public class Connect{
             }
         }		
 	}
+
 	public static void listGames(Connection connection){
+	    // >> LISTADO DE PARTIDAS DE "X" JUGADOR
 		try{
 
 			Scanner escaneo = new Scanner(System.in);
@@ -254,6 +261,7 @@ public class Connect{
 	}
 
 	public static void listAllGames(Connection connection){
+	    // >> LISTADO DE PARTIDAS
 		try{
 
 	        String query = "SELECT * FROM Partida";
@@ -283,9 +291,8 @@ public class Connect{
 	}
 
 
-
 	public static void listUserMan(Connection connection){
-
+	    // >> LISTADO DE USUARIOS
 		try{
 
 	        String query = "SELECT * FROM usuario ";
@@ -310,7 +317,7 @@ public class Connect{
     }
 
 	public static void listExUserMan(Connection connection){
-
+	    // >> LISTADO DE USUARIOS ELIMINADOS
 		try{
 
 	        String query = "SELECT * FROM ExUsuario ";
@@ -338,6 +345,7 @@ public class Connect{
 	}
 
 	public static void gamesWin(Connection connection){
+	    // >> PARTIDAS GANADAS DE  ''X'' JUGADOR
 		try{
 
 			Scanner escaneo = new Scanner(System.in);
@@ -382,15 +390,16 @@ public class Connect{
 		
 	}
 	public static void cantGamesWin(Connection connection){
+	    // >> CANTIDAD DE PARTIDAS GANADAS DE CADA JUGADOR 
 		try{
 			String query =  "SELECT COUNT(Nro_Partida), Nombre, Apellido FROM (Partida JOIN Usuario ON (Partida.Ganador = Usuario.DNI ))GROUP BY DNI";
 		    PreparedStatement statement = connection.prepareStatement(query);
 		    ResultSet resultSet = statement.executeQuery();
 
 		    while(resultSet.next()) {
-				System.out.println(" Cantidad: " + resultSet.getString(1));
-				System.out.println(" Nombre: " + resultSet.getString(2));
-				System.out.println(" Apellido: " + resultSet.getString(3));
+				System.out.print("Cantidad: " + resultSet.getString(1));
+				System.out.print("<> Nombre: " + resultSet.getString(2));
+				System.out.print("<> Apellido: " + resultSet.getString(3));
 				System.out.print("\n   ");
 				System.out.print("\n   ");
 			}
@@ -402,52 +411,23 @@ public class Connect{
     	}
     }
 
-
-	
-
 	public static void gameMoreLong(Connection connection){
+	    // >> LA PARTIDA MAS LARGA DE CADA JUGADOR
 		try{
-	        // String queryJ2 = "SELECT DISTINCT(Nro_Partida) FROM ( SELECT MAX(Fecha_fin - Fecha_inicio), Nombre, Apellido,Nro_Partida FROM (Partida JOIN Usuario ON (Partida.UserJ1 = Usuario.DNI OR Partida.UserJ2 = Usuario.DNI )) GROUP BY  Nombre, Apellido,Nro_Partida  ORDER BY Apellido) dur";
+	        
+	        String query = "SELECT MAX(Fecha_fin - Fecha_inicio), Nombre, Apellido FROM (Partida JOIN Usuario ON (Partida.UserJ1 = Usuario.DNI OR Partida.UserJ2 = Usuario.DNI )) GROUP BY  DNI ORDER BY Apellido";
+			// String queryJ2 = "(SELECT MAX(Fecha_fin - Fecha_inicio),UserJ1 FROM Partida GROUP BY UserJ1 ) UNION (SELECT MAX(Fecha_fin - Fecha_inicio),UserJ2 FROM Partida GROUP BY UserJ2)";
+		    PreparedStatement statement = connection.prepareStatement(query);
+		    ResultSet resultSet = statement.executeQuery();
 
-	        // String queryJ2 = "SELECT MAX(Fecha_fin - Fecha_inicio), Nombre, Apellido,Nro_Partida FROM (Partida JOIN Usuario ON (Partida.UserJ1 = Usuario.DNI OR Partida.UserJ2 = Usuario.DNI )) GROUP BY  DNI ";
-			String queryJ2 = "(SELECT MAX(Fecha_fin - Fecha_inicio),UserJ1 FROM Partida GROUP BY UserJ1 ) UNION (SELECT MAX(Fecha_fin - Fecha_inicio),UserJ2 FROM Partida GROUP BY UserJ2)";
-
-		     //    String queryJ1 = "SELECT EXTRACT(hour  FROM Fecha_inicio),EXTRACT(minute  FROM Fecha_inicio),EXTRACT(second  FROM Fecha_inicio),EXTRACT(hour  FROM Fecha_fin),EXTRACT(minute  FROM Fecha_fin),EXTRACT(second  FROM Fecha_fin),EXTRACT(day  FROM Fecha_inicio),EXTRACT(month  FROM Fecha_inicio),EXTRACT(year  FROM Fecha_inicio),EXTRACT(day  FROM Fecha_fin),EXTRACT(month  FROM Fecha_fin),EXTRACT(year  FROM Fecha_fin),Nombre FROM Partida JOIN Usuario ON (Partida.UserJ1 = Usuario.DNI)";
-			    // PreparedStatement statementJ1 = connection.prepareStatement(queryJ1);
-			    // ResultSet resultSetJ1 = statementJ1.executeQuery();
-
-		     //    String queryJ2 = "SELECT EXTRACT(hour  FROM Fecha_inicio),EXTRACT(minute  FROM Fecha_inicio),EXTRACT(second  FROM Fecha_inicio),EXTRACT(hour  FROM Fecha_fin),EXTRACT(minute  FROM Fecha_fin),EXTRACT(second  FROM Fecha_fin),EXTRACT(day  FROM Fecha_inicio),EXTRACT(month  FROM Fecha_inicio),EXTRACT(year  FROM Fecha_inicio),EXTRACT(day  FROM Fecha_fin),EXTRACT(month  FROM Fecha_fin),EXTRACT(year  FROM Fecha_fin),Nombre FROM Partida JOIN Usuario ON (Partida.UserJ2 = Usuario.DNI)";
-		     //    // String queryJ2 = "SELECT EXTRACT(hour  FROM Fecha_inicio),EXTRACT(minute  FROM Fecha_inicio),EXTRACT(second  FROM Fecha_inicio),EXTRACT(hour  FROM Fecha_fin),EXTRACT(minute  FROM Fecha_fin),EXTRACT(second  FROM Fecha_fin) FROM Partida WHERE UserJ2 = '" + dni +"'";
-			    PreparedStatement statementJ2 = connection.prepareStatement(queryJ2);
-			    ResultSet resultSetJ2 = statementJ2.executeQuery();
-
-
-			 //    while(resultSetJ1.next()) {
-				// 	System.out.println(" Hora Inicio: " + resultSetJ1.getString(1));
-				// 	System.out.println(" Minutos Inicio: " + resultSetJ1.getString(2));
-				// 	System.out.println(" Segundos Inicio: " + resultSetJ1.getString(3));
-				// 	System.out.println(" Dia Inicio: " + resultSetJ1.getString(7));
-				// 	System.out.println(" Mes Inicio: " + resultSetJ1.getString(8));
-				// 	System.out.println(" Año Inicio: " + resultSetJ1.getString(9));
-				// 	System.out.println(" Hora Fin: " + resultSetJ1.getString(4));
-				// 	System.out.println(" Minutos Fin: " + resultSetJ1.getString(5));
-				// 	System.out.println(" Segundos Fin: " + resultSetJ1.getString(6));
-				// 	System.out.println(" Dia Fin: " + resultSetJ1.getString(10));
-				// 	System.out.println(" Mes Fin: " + resultSetJ1.getString(11));
-				// 	System.out.println(" Año Fin: " + resultSetJ1.getString(12));
-				// 	System.out.println(" Nombre J1: " + resultSetJ1.getString(13));
-				// 	System.out.print("\n   ");
-				// 	System.out.print("\n   ");
-				// }
-
-			    while(resultSetJ2.next()) {
-					System.out.println(" duracion: " + resultSetJ2.getString(1));
-					System.out.println(" nombre: " + resultSetJ2.getString(2));
-					// System.out.println(" apellido: " + resultSetJ2.getString(3));
-					// System.out.println(" nro partida: " + resultSetJ2.getString(4));
-					System.out.print("\n   ");
-					System.out.print("\n   ");
-				}
+		    while(resultSet.next()) {
+				System.out.print("Duracion: " + resultSet.getString(1));
+				System.out.print(" <> Nombre: " + resultSet.getString(2));
+				System.out.print(" <> Apellido: " + resultSet.getString(3));
+				// System.out.println(" Nro partida: " + resultSet.getString(4));
+				System.out.print("\n   ");
+				System.out.print("\n   ");
+			}
 		   	mainMenu(connection);
 		}
 	    catch(SQLException sqle) {
@@ -456,21 +436,17 @@ public class Connect{
     	}
     }
  
-
-
-
-
 	public static void theWinners(Connection connection){
 		// >> EL DIA QUE GANARON TODOS LOS JUGADORES QUE HAYAN GANADO
 		try{
 
-	        String queryWin = "SELECT DISTINCT(Ganador),Nombre,Apellido,EXTRACT(day  FROM Fecha_fin),EXTRACT(month  FROM Fecha_fin),EXTRACT(year  FROM Fecha_fin) FROM Partida JOIN  Usuario on (Partida.Ganador = Usuario.DNI) ";
+	        String queryWin = "SELECT DISTINCT ON(DNI) Nombre,Apellido,EXTRACT(day  FROM Fecha_fin),EXTRACT(month  FROM Fecha_fin),EXTRACT(year  FROM Fecha_fin) FROM Partida JOIN  Usuario on (Partida.Ganador = Usuario.DNI) ";
 		    PreparedStatement statementWin = connection.prepareStatement(queryWin);
 		    ResultSet resultSetWin = statementWin.executeQuery();
 
 			while(resultSetWin.next()){
 				System.out.println();
-				System.out.println("Los Ganadores Son... : "+resultSetWin.getString(2)+", "+resultSetWin.getString(3)+" <> Gano en la Fecha: "+resultSetWin.getString(4)+"/"+resultSetWin.getString(5)+"/"+resultSetWin.getString(6));
+				System.out.println("Los Ganadores Son... : "+resultSetWin.getString(1)+", "+resultSetWin.getString(2)+" <> Gano en la Fecha: "+resultSetWin.getString(3)+"/"+resultSetWin.getString(4)+"/"+resultSetWin.getString(5));
 				System.out.println();
 			}
 
@@ -483,8 +459,19 @@ public class Connect{
     }
 
 	public static void neverPlayConnect(Connection connection){
-		// >> EL DIA QUE GANARON TODOS LOS JUGADORES QUE HAYAN GANADO
+	    // >> USUARIOS QUE NO HAYAN JUGADO NUNCA 
 		try{
+			String query = "SELECT * FROM Usuario WHERE DNI NOT IN (SELECT DNI FROM (Usuario JOIN  Partida ON Partida.UserJ1 = Usuario.DNI OR Partida.UserJ2 = Usuario.DNI)) ORDER BY Apellido   "; 
+		    PreparedStatement statement = connection.prepareStatement(query);
+		    ResultSet resultSet = statement.executeQuery();
+
+		    while(resultSet.next()) {
+				System.out.print(" DNI: " + resultSet.getString(1));
+				System.out.print(" <> Nombre: " + resultSet.getString(2));
+				System.out.print(" <> Apellido: " + resultSet.getString(3));
+				System.out.print("\n   ");
+				System.out.print("\n   ");
+			}
 
 		   	mainMenu(connection);
 		}
@@ -505,7 +492,6 @@ public class Connect{
 
 // 	>> CONSULTAS (ITEM 6)
     		// >> EL DIA QUE GANARON TODOS LOS JUGADORES QUE HAYAN GANADO >>>LISTO<<<
-    		// >> TODOS LOS JUGADORES QUE JUGARON EL MISMO DIA???
-// 	>> LLENAR LA BASE PARA PODER PROBAR TODO
-    // >> USUARIOS QUE NO HAYAN JUGADO NUNCA (CONSUTA CON SUBCONSULTA)
+		    // >> USUARIOS QUE NO HAYAN JUGADO NUNCA (CONSUTA CON SUBCONSULTA) >>>LISTO<<<
+// 	>> LLENAR LA BASE PARA PODER PROBAR TODO >>>LISTO<<<
 }
