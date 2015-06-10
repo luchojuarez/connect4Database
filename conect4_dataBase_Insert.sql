@@ -39,6 +39,8 @@ INSERT    INTO Usuario(DNI,Nombre,Apellido)
                  (7, 'Ariel',    'Rojas'),
                  (11,'Rodrigo',  'Mora'),
                  (19,'Teofilo',  'Gutierrez');
+                 (35,'Pablo',  'Aimar');
+                 (15,'Leonardo',  'Pisculichi');
 
 
 -- descomentar para probar trigger de auditoria de usuarios eliminados
@@ -65,9 +67,11 @@ INSERT    INTO Grilla(X,Y)
 
 
 
-INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrilla) 
-          VALUES (now(),now(),'Terminado',1,2,1);
-
+INSERT    INTO Partida(Fecha_inicio,Fecha_fin,Estado,UserJ1,UserJ2,idGrilla,Ganador) 
+          VALUES ('2015-06-09 15:30:00','2015-06-09 16:50:00','Terminado',1,2,1,2),
+                 ('2015-06-09 15:40:00','2015-06-09 15:50:00','Terminado',1,2,1,1),
+                ('2015-06-09 15:40:00','2015-06-09 15:45:00','Terminado',35,15,1,35),
+                ('2015-06-09 15:40:00','2015-06-09 15:45:00','Terminado',35,15,1,35);
 
 -- para probar el trigger de solapamiento de fechas crear una partida que no haya terminado
 -- o dos partidas que involucren a los mismos jugadores o a uno de los dos el mismo dia...
