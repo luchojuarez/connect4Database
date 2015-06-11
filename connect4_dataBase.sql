@@ -100,8 +100,9 @@ CONSTRAINT PK PRIMARY KEY (Nro_Partida,X,Y));
 create or replace function function_auditoria_usuarios_eliminados ()
 returns trigger as $$
   begin
-  insert into ExUsuario (Fecha,DNI,meElimino) 
+  insert into ExUsuario (Fecha,DNI,Nombre,Apellido,meElimino) 
               values (now(),old.DNI,old.Nombre,old.Apellido,USER);
+
   return new;
   end;
 $$ language plpgsql;
@@ -125,8 +126,8 @@ for each row execute procedure function_auditoria_usuarios_eliminados();
 create or replace function function_solapamiento_fecha()
 returns trigger as $$
   declare 
-  maxJ1 date;
-  maxJ2 date;
+  maxJ1 timestamp;
+  maxJ2 timestamp;
   begin
     -- busco la maxima fecha_fin(la ultima fecha) del jugador 1
     maxJ1 := (select max(Fecha_fin) from Partida where UserJ1=new.UserJ1 or UserJ2=new.UserJ1 );
@@ -143,7 +144,7 @@ returns trigger as $$
           return new;
         ELSE
           -- sino tiro una exception
-          raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';
+          raise exception 'Solapamiento de fechas!...PartidaNoFinalizadaException';
         END IF;
       ELSE    
         -- si si da el caso en donde maxJ2 no es null, checkeo que el que no es null
@@ -153,7 +154,7 @@ returns trigger as $$
             return new;
           ELSE
             -- sino tiro una exception
-            raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';
+            raise exception 'Solapamientos de fechas!...PartidaNoFinalizadaException';
           END IF;
         ELSE    
           -- si si da el caso en donde maxJ1 y maxJ2 no es null, checkeo que 
@@ -163,7 +164,7 @@ returns trigger as $$
               return new;
             ELSE
               -- sino tiro una exception
-              raise exception 'Se permite una partida por dia!...PartidaNoFinalizadaException';    
+              raise exception 'Solapamiento de fechas!...PartidaNoFinalizadaException';    
             END IF;
           END IF;
         END IF;
